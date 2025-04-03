@@ -1,0 +1,50 @@
+# === Fichiers Python compilés ===
+__pycache__/
+*.py[cod]
+*$py.class
+
+# === Environnements virtuels ===
+venv/
+.env/
+.venv/
+Pipfile
+Pipfile.lock
+
+# === Fichiers de logs ===
+*.log
+logs/
+
+# === Dépendances et packages ===
+*.egg-info/
+*.egg
+dist/
+build/
+*.whl
+
+# === Configuration et fichiers secrets ===
+*.ini
+*.cfg
+*.env
+.envrc
+
+# === Dossiers spécifiques à l'IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === Fichiers de tests et de couverture ===
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# === Documentation générée ===
+docs/_build/
+
+# === Sphinx ===
+*.rst.txt
+
+
+Mist.txt
+extract.txt

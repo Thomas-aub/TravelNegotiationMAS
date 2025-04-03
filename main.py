@@ -138,4 +138,4 @@ if __name__ == "__main__":
     run_single_negotiation()
     
     print("\n=== Running multiple negotiations ===")
-    run_multiple_negotiations(num_suppliers=20, num_buyers=3, negotiations_per_supplier=5)
+    run_multiple_negotiations(num_suppliers=10, num_buyers=3, negotiations_per_supplier=2)
