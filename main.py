@@ -244,6 +244,43 @@ def save_summary_to_html(negotiations, message_board, buyers, suppliers):
         <h1>Negotiation Summary</h1>
     """
 
+
+    # --- Section de résumé ---
+    accepted = 0
+    aborted = 0
+    final_prices = []
+
+    for id_negotiation in negotiations:
+        messages = message_board.get_all_messages(id_negotiation)
+        if not messages:
+            continue
+        last_message = messages[-1]
+        if last_message.state == "accepted":
+            accepted += 1
+            final_prices.append(last_message.price)
+        else:
+            aborted += 1
+
+    total = len(negotiations)
+    avg_price = sum(final_prices) / len(final_prices) if final_prices else 0
+    min_price = min(final_prices) if final_prices else 0
+    max_price = max(final_prices) if final_prices else 0
+
+    html_content += f"""
+        <div style='padding:20px; border-radius:8px; margin-bottom:30px;'>
+            <h2>Statistiques Générales</h2>
+            <ul>
+                <li><strong>Total des négociations :</strong> {total}</li>
+                <li><strong>Acceptées :</strong> {accepted} ({(accepted/total)*100:.1f}%)</li>
+                <li><strong>Annulées :</strong> {aborted} ({(aborted/total)*100:.1f}%)</li>
+                <li><strong>Prix moyen final :</strong> {avg_price:.2f}</li>
+                <li><strong>Prix minimum :</strong> {min_price:.2f}</li>
+                <li><strong>Prix maximum :</strong> {max_price:.2f}</li>
+            </ul>
+        </div>
+    """
+
+
     for id_negotiation in negotiations:
         # Trouver le supplier et le(s) buyer(s) participants
         participants = message_board.get_negotiation_participants(id_negotiation)
@@ -347,4 +384,4 @@ if __name__ == "__main__":
     # run_single_negotiation()
 
     print("\n=== Running multiple negotiations ===")
-    run_multiple_negotiations(num_suppliers=10, num_buyers=3, negotiations_per_supplier=1)
+    run_multiple_negotiations(num_suppliers=20, num_buyers=8, negotiations_per_supplier=3)
