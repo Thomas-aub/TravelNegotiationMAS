@@ -1,115 +1,85 @@
 class Coalition:
-    def __init__(self, members, coalition_type):
+    def __init__(self, members, coalition_id):
         """
-        Initialise une coalition d'agents.
-        
+        Initialise une coalition d'agents acheteurs.
+
         Args:
             members (list): Liste des agents membres de la coalition
-            coalition_type (str): Type de la coalition ("supplier" ou "buyer")
+            coalition_id (str): Identifiant unique de la coalition
         """
         self.members = members
-        self.type = coalition_type
-        self.value = self.calculate_value()
-    
-    def calculate_value(self):
+        self.id = coalition_id
+        self.type = "buyer"
+        self.max_price = self.calculate_max_price()
+        self.current_price = self.max_price * 0.5  # Prix initial
+        self.favourite_companies = self.aggregate_preferences("favourite_companies")
+        self.worst_companies = self.aggregate_preferences("worst_companies")
+        self.blocked_companies = self.aggregate_preferences("blocked_companies")
+
+    def aggregate_preferences(self, pref_type):
         """
-        Calcule la valeur de la coalition en fonction des profils des membres.
+        Agrège les préférences des membres de la coalition.
+        
+        Args:
+            pref_type (str): Type de préférence ('favourite', 'worst', 'blocked')
+            
+        Returns:
+            set: Ensemble des compagnies dans cette catégorie
+        """
+        pref_set = set()
+        for member in self.members:
+            pref_set.update(getattr(member, pref_type, []))
+        return list(pref_set)
+
+    def calculate_max_price(self):
+        """
+        Calcule le prix maximum que la coalition est prête à payer.
         
         Returns:
-            float: Valeur de la coalition
+            float: Prix maximum
         """
-        # Valeur de base proportionnelle au nombre de membres
-        base_value = len(self.members) * 10
-        
-        # Ajouter des bonus en fonction du type
-        if self.type == "buyer":
-            # Plus la coalition d'acheteurs est grande, plus la réduction est importante
-            return base_value * (1 + 0.05 * len(self.members))
-        else:
-            # Les fournisseurs ont une valeur plus linéaire
-            return base_value * 1.2
-    
-    def get_price_adjustment(self):
-        """
-        Calcule l'ajustement de prix offert par la coalition.
-        
-        Returns:
-            float: Facteur d'ajustement (multiplicateur)
-        """
-        if self.type == "buyer":
-            # Les acheteurs obtiennent des remises
-            # Plus la valeur est élevée, plus la remise est grande
-            discount = min(0.3, 0.05 + (self.value / 100) * 0.01)
-            return 1 - discount
-        else:
-            # Les fournisseurs peuvent augmenter leurs prix minimums
-            increase = min(0.2, 0.05 + (self.value / 100) * 0.01)
-            return 1 + increase
+        # On prend la moyenne des prix max des membres avec une légère réduction
+        total = sum(member.max_price for member in self.members)
+        return total * 0.9 / len(self.members)  # 10% de réduction grâce à la coalition
 
+    def notify(self, id_negotiation):
+        """
+        Notifie la coalition d'un nouveau message.
+        """
+        # Déléguer la notification à tous les membres
+        for member in self.members:
+            member.notify(id_negotiation)
 
-def idp_coalition_formation(agents, max_coalition_size=None):
+    def send_message(self, id_negotiation, price, state="processing"):
+        """
+        Envoie un message au nom de la coalition.
+        """
+        # Utiliser le premier membre comme représentant pour l'envoi
+        self.members[0].send_message(id_negotiation, price, state)
+
+def form_buyer_coalitions(buyers, max_size=3):
     """
-    Algorithme IDP (Improved Dynamic Programming) pour former des coalitions optimales.
+    Forme des coalitions d'acheteurs.
     
     Args:
-        agents (list): Liste des agents
-        max_coalition_size (int, optional): Taille maximale d'une coalition
+        buyers (list): Liste des acheteurs disponibles
+        max_size (int): Taille maximale d'une coalition
         
     Returns:
-        list: Liste des coalitions formées
+        list: Liste des coalitions formées et acheteurs restants
     """
-    if not agents:
-        return []
+    coalitions = []
+    remaining_buyers = buyers.copy()
     
-    # Si la taille maximale n'est pas spécifiée, utiliser le nombre d'agents
-    if max_coalition_size is None:
-        max_coalition_size = len(agents)
+    # Trier les acheteurs par prix maximum décroissant
+    remaining_buyers.sort(key=lambda b: b.max_price, reverse=True)
     
-    # Vérifier le type des agents
-    agent_type = agents[0].type
+    while len(remaining_buyers) >= 2:  # Au moins 2 acheteurs pour former une coalition
+        # Prendre les max_size premiers acheteurs
+        coalition_members = remaining_buyers[:max_size]
+        coalition_id = f"Coalition_{len(coalitions)+1}"
+        new_coalition = Coalition(coalition_members, coalition_id)
+        coalitions.append(new_coalition)
+        remaining_buyers = remaining_buyers[max_size:]
     
-    # Tableau pour stocker les meilleures structures de coalition
-    dp = [[] for _ in range(len(agents) + 1)]
-    dp[0] = []  # Cas de base: 0 agent
-    
-    # Pour chaque nombre d'agents
-    for i in range(1, len(agents) + 1):
-        best_value = 0
-        best_structure = []
-        
-        # Essayer toutes les tailles possibles pour la dernière coalition
-        for j in range(1, min(i, max_coalition_size) + 1):
-            # Créer une coalition avec les j derniers agents
-            last_coalition = Coalition(agents[i-j:i], agent_type)
-            
-            # Valeur totale = valeur de la dernière coalition + valeur optimale pour les agents restants
-            value = last_coalition.value
-            if i-j > 0:
-                value += sum(c.value for c in dp[i-j])
-            
-            # Mettre à jour la meilleure structure si nécessaire
-            if value > best_value:
-                best_value = value
-                best_structure = dp[i-j] + [last_coalition]
-        
-        dp[i] = best_structure
-    
-    return dp[len(agents)]
-
-
-def token_based_coalition_formation(agents, max_iterations=10):
-    """
-    Algorithme basé sur des jetons pour former des coalitions de manière distribuée.
-    
-    Args:
-        agents (list): Liste des agents
-        max_iterations (int): Nombre maximum d'itérations
-        
-    Returns:
-        list: Liste des coalitions formées
-    """
-    if not agents:
-        return []
-    
-    # Vérifier le type des agents
-    agent_type = agents[0].type
+    return coalitions, remaining_buyers
