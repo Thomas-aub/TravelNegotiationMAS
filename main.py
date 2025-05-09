@@ -84,7 +84,7 @@ def run_multiple_negotiations(num_suppliers, num_buyers, negotiations_per_suppli
     # Créer les acheteurs avec différentes stratégies
     buyers = []
     for i in range(num_buyers):
-        strategy = "default" if i % 2 == 0 else "default"
+        strategy = "aggressive" if i % 2 == 0 else "default"
         max_price = 600 + (i * 50)  # Différents prix maximums
         buyer = Buyer(f"buyer_{i}", message_board, first_price=max_price*0.5, max_price=max_price, strategy_type=strategy, favourite_companies=[f"Company{i}"], worst_companies=[f"Company{(i+1)%num_suppliers}"], blocked_companies=None)
         buyers.append(buyer)
