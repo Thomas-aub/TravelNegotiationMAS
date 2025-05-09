@@ -96,6 +96,7 @@ class SharedMessageBoard:
         """
         with self.lock:
             self.negotiation_participants[id_negotiation].add(agent_id)
+        print(id_negotiation, " ajout de ", self.negotiation_participants[id_negotiation])
 
     def is_participant(self, id_negotiation, agent_id):
         """
@@ -127,13 +128,16 @@ class SharedMessageBoard:
     def has_buyer_participant(self, id_negotiation):
         """
         Vérifie si une négociation a déjà un acheteur participant.
-        
+
         Args:
             id_negotiation (str): L'identifiant de la négociation
-            
+
         Returns:
             bool: True s'il y a déjà un acheteur participant, False sinon
         """
         with self.lock:
             participants = self.negotiation_participants.get(id_negotiation, set())
             return any(p.startswith('B_') or p.startswith('buyer_') for p in participants)
+
+        
+    

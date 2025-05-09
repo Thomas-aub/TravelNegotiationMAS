@@ -128,7 +128,6 @@ def run_multiple_negotiations(num_suppliers, num_buyers, negotiations_per_suppli
                     
                 if last_message.state in ["accepted", "aborted"] or last_message.message_remaining <= 0:
                     completed.add(id_negotiation)
-                    print(f"Negotiation {id_negotiation} completed")
                     
             active_negotiations -= completed
             if active_negotiations:
@@ -313,7 +312,6 @@ def save_summary_to_html(negotiations, message_board, buyers, suppliers):
 
             <h3>Buyer(s) Information:</h3>
         """
-
         for buyer in buyers_in_negotiation:
             html_content += f"""
             <div style="margin-bottom: 15px;">
@@ -384,4 +382,4 @@ if __name__ == "__main__":
     # run_single_negotiation()
 
     print("\n=== Running multiple negotiations ===")
-    run_multiple_negotiations(num_suppliers=20, num_buyers=8, negotiations_per_supplier=3)
+    run_multiple_negotiations(num_suppliers=10, num_buyers=8, negotiations_per_supplier=3)
