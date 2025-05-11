@@ -14,14 +14,33 @@ from supplierCoalition import SupplierCoalition
 
 def run_single_negotiation():
     message_board = SharedMessageBoard()
+
+    # Création des agents
     supplier = Supplier("supplier_1", message_board, first_price=1000, min_price=500, company="CompanyX", ticket_remaining=3)
     buyer = Buyer("buyer_1", message_board, first_price=300, max_price=600, favourite_companies=["CompanyX"], worst_companies=[], blocked_companies=[])
-    
+
     supplier.start()
     buyer.start()
-    
+
+    # Affichage des infos
+    print("Supplier Information:")
+    print(f"Supplier ID: {supplier.id}")
+    print(f"Min Price: {supplier.min_price}")
+    print(f"Company: {supplier.company}")
+    print(f"Tickets Remaining: {supplier.ticket_remaining}")
+    print("Buyer Information:")
+    print(f"Buyer ID: {buyer.id}")
+    print(f"Max Price: {buyer.max_price}")
+    print(f"Favorite Companies: {', '.join(buyer.favourite_companies)}")
+    print(f"Worst Companies: {', '.join(buyer.worst_companies)}")
+    print(f"Blocked Companies: {', '.join(buyer.blocked_companies) if buyer.blocked_companies else 'None'}")
+    print("------")
+    print("Starting negotiation...")
+
+    # Lancer la négociation
     negotiation_id = supplier.start_negotiation()
 
+    # Attendre la fin de la négociation
     try:
         while True:
             last_msg = message_board.get_last_message(negotiation_id)
@@ -29,15 +48,20 @@ def run_single_negotiation():
                 break
             time.sleep(0.5)
     except KeyboardInterrupt:
-        print("Negotiation interrupted")
+        print("Negotiation interrupted by user")
 
+    # Arrêt des threads
     supplier.stop()
     buyer.stop()
 
+    # Récupération des messages
     print("\nSummary:")
     messages = message_board.get_all_messages(negotiation_id)
     for msg in messages:
         print(f"  {msg}")
+
+   
+        
 
 
 def run_multiple_negotiations(num_suppliers, num_buyers, negotiations_per_supplier):
@@ -162,7 +186,7 @@ def run_multiple_negotiations(num_suppliers, num_buyers, negotiations_per_suppli
         print(f"  Max price: {max(final_prices):.2f}")
     
     # Save summary to CSV
-    save_summary_to_csv(negotiations, message_board)
+    save_summary_to_csv(negotiations, message_board, filename="multiple_negotiation_summary.csv")
 
     # Appel de la fonction pour générer le fichier HTML
     save_summary_to_html_bis(negotiations, message_board, buyers, suppliers, filename="multiple_negotiation_summary.html")
@@ -277,7 +301,7 @@ def run_multiple_negotiations_with_coalitions(num_suppliers, num_buyers, negotia
     if final_prices:
         print(f"  Prix moyen : {sum(final_prices)/len(final_prices):.2f}")
 
-    save_summary_to_csv(negotiations, message_board,filename)
+    save_summary_to_csv(negotiations, message_board,filename="multiple_negotiation_coalition_summary.csv")
     save_summary_to_html(negotiations, message_board, buyers, suppliers, filename)
 
 

@@ -28,7 +28,7 @@ def save_summary_to_csv(negotiation_ids, message_board, filename="negotiation_su
 def generate_base64_graph(prices, states):
     fig1, ax1 = plt.subplots()
     labels = ["Accepted", "Aborted"]
-    sizes = [states.count("accepted"), states.count("aborted")]
+    sizes = [states.count("accepted"), states.count("aborted")+ states.count("processing")]
     ax1.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
     ax1.axis('equal')
     pie_buf = io.BytesIO()
